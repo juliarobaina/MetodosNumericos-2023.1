@@ -5,42 +5,20 @@
 
 double *alocarVetor(int tam)
 {
-
     double *novo = (double *)calloc(tam, sizeof(double));
 
     return novo;
 }
 
-double **alocarMatriz(int ordem)
+void eliminacaoGauss(FILE *matriz, FILE *vetorB, int ordem)
 {
-
-    double **novo = (double **)calloc(ordem, sizeof(double *));
-
-    for (int i = 0; i < ordem; i++)
-    {
-        novo[i] = alocarVetor(ordem);
-    }
-
-    return novo;
-}
-
-void liberarMatriz(double **matriz, int ordem)
-{
-    for (int i = 0; i < ordem; i++)
-    {
-        free(matriz[i]);
-    }
-    free(matriz);
-}
-
-void eliminacaoGauss(FILE *matriz, double *vetorB, int ordem)
-{
-
     double **A = malloc(ordem * sizeof(double *));
+    double *B = malloc(ordem * sizeof(double *));
 
     for (int i = 0; i < ordem; i++)
     {
         *(A + i) = malloc(ordem * sizeof(double));
+        fscanf(vetorB, "%lf", &B[i]);
         for (int j = 0; j < ordem; j++)
         {
             fscanf(matriz, "%lf", &A[i][j]);
@@ -72,7 +50,7 @@ void eliminacaoGauss(FILE *matriz, double *vetorB, int ordem)
                 // Esse loop defini o multiplicador da linha
                 double F = -A[m][k] / A[k][k];
                 A[m][k] = 0; // evita uma iteração
-                vetorB[m] = vetorB[m] + F * vetorB[k];
+                B[m] = B[m] + F * B[k];
                 for (int l = k + 1; l < ordem; l++)
                 {
                     // Atualização da linha, matriz[k][l] é o elemento da linha do pivô
@@ -87,7 +65,7 @@ void eliminacaoGauss(FILE *matriz, double *vetorB, int ordem)
     // ETAPA DE RESOLUÇÃO DO SISTEMA
     for (int i = ordem - 1; i >= 0; i--)
     {
-        x[i] = vetorB[i];
+        x[i] = B[i];
         for (int j = i + 1; j < ordem; j++)
         {
             x[i] = x[i] - x[j] * A[i][j];
@@ -102,6 +80,5 @@ void eliminacaoGauss(FILE *matriz, double *vetorB, int ordem)
     {
         printf("x[%d] = %lf\n", i, x[i]);
     }
-    free(A);
-    free(x);
+    free(A), free(B), free(x);
 }

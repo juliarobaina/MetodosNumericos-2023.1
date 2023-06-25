@@ -2,17 +2,20 @@
 #include <stdlib.h>
 #include <time.h>
 
-void randomizaArquivo(FILE *arquivo, int tamanhoMatriz)
+void randomizaArquivo(FILE *arquivoA, FILE *arquivoB, int tamanhoMatriz)
 {
 
     for (int i = 0; i < tamanhoMatriz; i++)
     {
         for (int j = 0; j < tamanhoMatriz; j++)
         {
-            fprintf(arquivo, "%lf ", (double)(rand() % 10000));
+            fprintf(arquivoA, "%lf ", (double)(rand() % 10000));
         }
-        fprintf(arquivo, "\n");
+        fprintf(arquivoA, "\n");
     }
+
+    for (int i = 0; i < tamanhoMatriz; i++)
+        fprintf(arquivoB, "%lf\n", (double)(rand() % 10000));
 }
 
 int main(int argc, char *argv[])
@@ -22,11 +25,9 @@ int main(int argc, char *argv[])
     FILE *matrizA = fopen("A.txt", "w"),
          *vetorB = fopen("B.txt", "w");
 
-    randomizaArquivo(matrizA, atoi(argv[1])),
-        randomizaArquivo(vetorB, atoi(argv[1]));
+    randomizaArquivo(matrizA, vetorB, atoi(argv[1]));
 
-    fclose(matrizA),
-        fclose(vetorB);
+    fclose(matrizA), fclose(vetorB);
 
     return 0;
 }

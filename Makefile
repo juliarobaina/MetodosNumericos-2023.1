@@ -1,10 +1,7 @@
-ordem = 10
+ordem = 1000
 
 all:	
 	clear
 	gcc -o geraArquivos geraArquivos.c -Wall
-	./geraArquivos $(ordem)
 	gcc -o main -fopenmp main.c -Wall
-	./main $(ordem)
-
-
+	time ./main $(ordem)

@@ -10,32 +10,23 @@ double *alocarVetor(int tam)
 
     return novo;
 }
-
 void eliminacaoGauss(FILE *matriz, FILE *vetorB, int ordem)
 {
     double **A = malloc(ordem * sizeof(double *));
     double *B = malloc(ordem * sizeof(double *));
 
-#pragma omp parallel for
     for (int i = 0; i < ordem; i++)
     {
         *(A + i) = malloc(ordem * sizeof(double));
         fscanf(vetorB, "%lf", &B[i]);
-        printf("thread %d, B[%d] = %lf\n", omp_get_thread_num(), i, B[i]); // fora de ordem/não bate com arquivo
         for (int j = 0; j < ordem; j++)
             fscanf(matriz, "%lf", &A[i][j]);
-    }
-
-    printf("\n");
-
-    for (int i = 0; i < ordem; i++)
-    {
-        printf("\t  B[%d] = %lf \n", i, B[i]);
     }
 
     // eliminação de Gauss com Pivoteamento Total
 
     // ETAPA DE ESCALONAMENTO
+
     for (int k = 0; k < ordem - 1; k++)
     {
         /*
@@ -50,16 +41,18 @@ void eliminacaoGauss(FILE *matriz, FILE *vetorB, int ordem)
         if (A[k][k] == 0)
         {
             printf("A matriz dos coeficientes é singular\n");
-            return;
         }
         else
         {
             // realiza o escalonamento
 
+#pragma omp parallel for
             for (int m = k + 1; m < ordem; m++)
             {
+                double F = 0;
                 // Esse loop define o multiplicador da linha
-                double F = -A[m][k] / A[k][k];
+#pragma omp critical
+                F = -A[m][k] / A[k][k];
                 A[m][k] = 0; // evita uma iteração
                 B[m] = B[m] + F * B[k];
                 for (int l = k + 1; l < ordem; l++)
@@ -72,16 +65,18 @@ void eliminacaoGauss(FILE *matriz, FILE *vetorB, int ordem)
     }
 
     double *x = alocarVetor(ordem);
-
     // ETAPA DE RESOLUÇÃO DO SISTEMA
+
     for (int i = ordem - 1; i >= 0; i--)
     {
         x[i] = B[i];
+#pragma omp parallel for
         for (int j = i + 1; j < ordem; j++)
         {
+#pragma omp critical
             x[i] = x[i] - x[j] * A[i][j];
         }
-
+#pragma omp critical
         x[i] = x[i] / A[i][i];
     }
 

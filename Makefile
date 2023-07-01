@@ -1,6 +1,10 @@
+ordem = 10
+
 all:	
-	gcc -o geraArquivos geraArquivos.c
-	./geraArquivos 10
-	gcc -o main main.c -Wall
 	clear
-	./main 10
+	gcc -o geraArquivos geraArquivos.c -Wall
+	./geraArquivos $(ordem)
+	gcc -o main -fopenmp main.c -Wall
+	./main $(ordem)
+
+

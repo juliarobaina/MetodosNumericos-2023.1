@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <omp.h>
 
 double *alocarVetor(int tam)
 {
@@ -15,14 +16,21 @@ void eliminacaoGauss(FILE *matriz, FILE *vetorB, int ordem)
     double **A = malloc(ordem * sizeof(double *));
     double *B = malloc(ordem * sizeof(double *));
 
+#pragma omp parallel for
     for (int i = 0; i < ordem; i++)
     {
         *(A + i) = malloc(ordem * sizeof(double));
         fscanf(vetorB, "%lf", &B[i]);
+        printf("thread %d, B[%d] = %lf\n", omp_get_thread_num(), i, B[i]); // fora de ordem/não bate com arquivo
         for (int j = 0; j < ordem; j++)
-        {
             fscanf(matriz, "%lf", &A[i][j]);
-        }
+    }
+
+    printf("\n");
+
+    for (int i = 0; i < ordem; i++)
+    {
+        printf("\t  B[%d] = %lf \n", i, B[i]);
     }
 
     // eliminação de Gauss com Pivoteamento Total
@@ -30,10 +38,12 @@ void eliminacaoGauss(FILE *matriz, FILE *vetorB, int ordem)
     // ETAPA DE ESCALONAMENTO
     for (int k = 0; k < ordem - 1; k++)
     {
-        /*RODA N - 1 VEZES POR QUE EU NÃO PRECISO
+        /*
+        RODA N - 1 VEZES POR QUE EU NÃO PRECISO
         ESCALONAR ATÉ A ÚLTIMA COLUNA PARA TER UMA
         MATRIZ TRIANGULAR SUPERIOR. OS 0'S VÃO ATÉ A PENÚLTIMA COLUNA. N É O TAMANHO HUMANO; N - 1 TAMANHO DA MÁQUINA;
-        < N - 1 -> PERCORRA ATÉ A PENÚLTIMA LINHA*/
+        < N - 1 -> PERCORRA ATÉ A PENÚLTIMA LINHA
+        */
 
         // Se A[k][k] é zero, então a matriz dos coeficiente é singular
         // det A = 0
@@ -45,9 +55,10 @@ void eliminacaoGauss(FILE *matriz, FILE *vetorB, int ordem)
         else
         {
             // realiza o escalonamento
+
             for (int m = k + 1; m < ordem; m++)
             {
-                // Esse loop defini o multiplicador da linha
+                // Esse loop define o multiplicador da linha
                 double F = -A[m][k] / A[k][k];
                 A[m][k] = 0; // evita uma iteração
                 B[m] = B[m] + F * B[k];
